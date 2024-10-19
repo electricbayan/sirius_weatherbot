@@ -1,0 +1,16 @@
+services:
+  db:
+    image: postgres:latest
+    container_name: database_weatherbot
+
+    ports:
+      - 2828:5432
+    env_file:
+      - .env
+  
+  tg_api:
+    build:
+      context: .
+    env_file:
+      - .env
+    container_name: weatherbot
