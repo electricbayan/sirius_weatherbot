@@ -8,7 +8,4 @@ RUN pip install -r /app/requirements.txt
 
 COPY ./src /app
 
-WORKDIR /app
-
 RUN chmod a+x /app/scripts/*.sh
-

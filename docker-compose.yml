@@ -7,10 +7,17 @@ services:
       - 2828:5432
     env_file:
       - .env
-  
+    volumes:
+      - weather-db:/docker-volumes/weather-db
   tg_api:
     build:
       context: .
     env_file:
       - .env
     container_name: weatherbot
+    command: bash -c "/app/scripts/start.sh"
+    depends_on:
+      - db
+
+volumes:
+  weather-db:

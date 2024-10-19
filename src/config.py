@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     POSTGRES_PORT: int
     POSTGRES_HOST: str
 
-    model_config = SettingsConfigDict(env_file='.env')
+    model_config = SettingsConfigDict(env_file='/app/.env')
 
     @property
     def DATABASE_URL(self):
