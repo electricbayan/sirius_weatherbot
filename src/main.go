@@ -1,11 +1,17 @@
 package main
 
 import (
+	"context"
+	"fmt"
 	"log"
+	"os"
+	"strconv"
 
-	"github.com/electric_bayan/weatherbot/clients/telegram"
-	"github.com/electric_bayan/weatherbot/config"
+	"github.com/electric_bayan/weather_bot/config"
+	"github.com/electric_bayan/weather_bot/fsm"
 	"github.com/joho/godotenv"
+	"github.com/mymmrac/telego"
+	"github.com/mymmrac/telego/telegohandler"
 )
 
 func init() {
@@ -16,5 +22,62 @@ func init() {
 
 func main() {
 	conf := config.New()
-	tg_client := telegram.New(conf.TgAPIkey, conf.Host)
+
+	ctx := context.Background()
+
+	redis_client := fsm.New()
+
+	bot, err := telego.NewBot(conf.TgAPIkey)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	updates, err := bot.UpdatesViaLongPolling(nil)
+	if err != nil {
+		fmt.Println("Error with polling", err)
+	}
+	bh, err := telegohandler.NewBotHandler(bot, updates)
+	if err != nil {
+		fmt.Println("Error during creatin handler", err)
+	}
+	bh.HandleMessage(func(bot *telego.Bot, message telego.Message) {
+		chatID := message.Chat.ID
+		strid := strconv.Itoa(int(chatID))
+		current_state, err := redis_client.Get(ctx, strid).Result()
+		if err != nil {
+			fmt.Println("Error during getting state")
+		}
+		if message.Text == "/start" {
+			_, err := bot.SendMessage(&telego.SendMessageParams{
+				ChatID: telego.ChatID{ID: chatID},
+				Text:   "Enter your city.",
+			})
+			if err != nil {
+				fmt.Println("Error during requesting msg", err)
+			}
+
+			err = redis_client.Set(ctx, strid, "CityWaiting", 0).Err()
+			if err != nil {
+				fmt.Println("Error with redis", err)
+			}
+		}
+		if current_state == "CityWaiting" {
+			_, err := bot.SendMessage(&telego.SendMessageParams{
+				ChatID: telego.ChatID{ID: chatID},
+				Text:   "OK.",
+			})
+			if err != nil {
+				fmt.Println("Error during requesting msg", err)
+			}
+			err = redis_client.Set(ctx, strid, "", 0).Err()
+			if err != nil {
+				fmt.Println("Error with redis", err)
+			}
+		}
+	})
+
+	bh.Start()
+
+	bh.Stop()
+
 }

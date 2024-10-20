@@ -13,8 +13,16 @@ type PostgresConfig struct {
 	DbHost string
 }
 
+type RedisConfig struct {
+	RedisHost string
+	RedisPort int
+	RedisPass string
+	RedisDb   string
+}
+
 type Config struct {
 	Postgres      PostgresConfig
+	Redis         RedisConfig
 	TgAPIkey      string
 	WeatherAPIkey string
 	Host          string
@@ -26,8 +34,14 @@ func New() *Config {
 			DbName: getEnv("POSTGRES_DB", ""),
 			DbUser: getEnv("POSTGRES_USER", ""),
 			DbPass: getEnv("POSTGRES_PASSWORD", ""),
-			DbPort: getEnvAsInt("POSTGRES_PORT", 8000),
+			DbPort: getEnvAsInt("POSTGRES_PORT", 5432),
 			DbHost: getEnv("POSTGRES_HOST", ""),
+		},
+		Redis: RedisConfig{
+			RedisHost: getEnv("REDIS_HOST", ""),
+			RedisPort: getEnvAsInt("REDIS_PORT", 6379),
+			RedisPass: getEnv("REDIS_PASSWORD", ""),
+			RedisDb:   getEnv("REDIS_DB", ""),
 		},
 		TgAPIkey:      getEnv("TG_API_KEY", ""),
 		WeatherAPIkey: getEnv("WEATHER_API_KEY", ""),

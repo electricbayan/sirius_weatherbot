@@ -1,11 +1,13 @@
-FROM python:3.10
+FROM golang:latest
 
 RUN mkdir /app
-
-COPY ./requirements.txt /app/requirements.txt
-
-RUN pip install -r /app/requirements.txt
 
 COPY ./src /app
 
 RUN chmod a+x /app/scripts/*.sh
+
+WORKDIR /app
+
+RUN go build -o main .
+
+CMD ["/app/main"]

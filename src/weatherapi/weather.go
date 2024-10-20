@@ -1,0 +1,5 @@
+package weatherapi
+
+func main() {
+
+}
