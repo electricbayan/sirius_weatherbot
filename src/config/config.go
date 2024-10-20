@@ -17,6 +17,7 @@ type Config struct {
 	Postgres      PostgresConfig
 	TgAPIkey      string
 	WeatherAPIkey string
+	Host          string
 }
 
 func New() *Config {
@@ -30,6 +31,7 @@ func New() *Config {
 		},
 		TgAPIkey:      getEnv("TG_API_KEY", ""),
 		WeatherAPIkey: getEnv("WEATHER_API_KEY", ""),
+		Host:          getEnv("HOST", ""),
 	}
 }
 
