@@ -1,0 +1,1 @@
+Weather bot for Ural Project Shift
