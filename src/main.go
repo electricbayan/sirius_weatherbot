@@ -9,6 +9,7 @@ import (
 
 	"github.com/electric_bayan/weather_bot/config"
 	"github.com/electric_bayan/weather_bot/fsm"
+	"github.com/electric_bayan/weather_bot/weatherapi"
 	"github.com/joho/godotenv"
 	"github.com/mymmrac/telego"
 	"github.com/mymmrac/telego/telegohandler"
@@ -21,6 +22,9 @@ func init() {
 }
 
 func main() {
+
+	coords := weatherapi.SendGeocoderRequest("Yekaterinburg")
+	weatherapi.SendWeatherRequest(coords)
 	conf := config.New()
 
 	ctx := context.Background()
@@ -32,6 +36,7 @@ func main() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+
 	updates, err := bot.UpdatesViaLongPolling(nil)
 	if err != nil {
 		fmt.Println("Error with polling", err)
@@ -40,10 +45,12 @@ func main() {
 	if err != nil {
 		fmt.Println("Error during creatin handler", err)
 	}
+	// main handler
 	bh.HandleMessage(func(bot *telego.Bot, message telego.Message) {
 		chatID := message.Chat.ID
 		strid := strconv.Itoa(int(chatID))
 		current_state, err := redis_client.Get(ctx, strid).Result()
+
 		if err != nil {
 			fmt.Println("Error during getting state")
 		}
@@ -69,6 +76,7 @@ func main() {
 			if err != nil {
 				fmt.Println("Error during requesting msg", err)
 			}
+
 			err = redis_client.Set(ctx, strid, "", 0).Err()
 			if err != nil {
 				fmt.Println("Error with redis", err)

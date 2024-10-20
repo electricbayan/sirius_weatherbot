@@ -21,11 +21,12 @@ type RedisConfig struct {
 }
 
 type Config struct {
-	Postgres      PostgresConfig
-	Redis         RedisConfig
-	TgAPIkey      string
-	WeatherAPIkey string
-	Host          string
+	Postgres       PostgresConfig
+	Redis          RedisConfig
+	TgAPIkey       string
+	WeatherAPIkey  string
+	GeocoderAPIkey string
+	Host           string
 }
 
 func New() *Config {
@@ -43,9 +44,10 @@ func New() *Config {
 			RedisPass: getEnv("REDIS_PASSWORD", ""),
 			RedisDb:   getEnv("REDIS_DB", ""),
 		},
-		TgAPIkey:      getEnv("TG_API_KEY", ""),
-		WeatherAPIkey: getEnv("WEATHER_API_KEY", ""),
-		Host:          getEnv("HOST", ""),
+		TgAPIkey:       getEnv("TG_API_KEY", ""),
+		WeatherAPIkey:  getEnv("WEATHER_API_KEY", ""),
+		Host:           getEnv("HOST", ""),
+		GeocoderAPIkey: getEnv("GEOCODER_API_KEY", ""),
 	}
 }
 

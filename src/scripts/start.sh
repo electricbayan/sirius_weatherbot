@@ -1,3 +1,5 @@
 #!/bin/bash
 
-./app/main
+cd /app
+
+./main
