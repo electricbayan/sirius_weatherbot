@@ -23,7 +23,7 @@ type WeatherForecast struct {
 	Snow               float32
 }
 
-func SendGeocoderRequest(city string) Coordinates {
+func SendGeocoderRequest(city string) (Coordinates, error) {
 	conf := config.New()
 
 	client := &http.Client{}
@@ -54,15 +54,19 @@ func SendGeocoderRequest(city string) Coordinates {
 	_ = json.Unmarshal(res_bytes, &jsonRes)
 	response := jsonRes["response"].(map[string]interface{})
 	geoobjectcol := response["GeoObjectCollection"].(map[string]interface{})
-	featuremember := geoobjectcol["featureMember"].([]interface{})[0].(map[string]interface{})
-	geoobject := featuremember["GeoObject"].(map[string]interface{})
-	pointed := geoobject["Point"].(map[string]interface{})
-	position := pointed["pos"].(string)
-	coordinates := strings.Split(position, " ")
-	lat, _ := strconv.ParseFloat(coordinates[1], 64)
-	lon, _ := strconv.ParseFloat(coordinates[0], 64)
+	featuremember := geoobjectcol["featureMember"].([]interface{})
+	if len(featuremember) > 0 {
+		ft := featuremember[0].(map[string]interface{})
+		geoobject := ft["GeoObject"].(map[string]interface{})
+		pointed := geoobject["Point"].(map[string]interface{})
+		position := pointed["pos"].(string)
+		coordinates := strings.Split(position, " ")
+		lat, _ := strconv.ParseFloat(coordinates[1], 64)
+		lon, _ := strconv.ParseFloat(coordinates[0], 64)
 
-	return Coordinates{lat: lat, lon: lon}
+		return Coordinates{lat: lat, lon: lon}, nil
+	}
+	return Coordinates{0, 0}, fmt.Errorf("WrongCity")
 
 }
 

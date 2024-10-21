@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/electric_bayan/weather_bot/config"
+	"github.com/electric_bayan/weather_bot/db"
 	"github.com/electric_bayan/weather_bot/fsm"
 	"github.com/electric_bayan/weather_bot/weatherapi"
 	"github.com/joho/godotenv"
@@ -23,8 +24,8 @@ func init() {
 
 func main() {
 
-	coords := weatherapi.SendGeocoderRequest("Yekaterinburg")
-	weatherapi.SendWeatherRequest(coords)
+	// coords := weatherapi.SendGeocoderRequest("Yekaterinburg")
+	// weatherapi.SendWeatherRequest(coords)
 	conf := config.New()
 
 	ctx := context.Background()
@@ -69,18 +70,33 @@ func main() {
 			}
 		}
 		if current_state == "CityWaiting" {
-			_, err := bot.SendMessage(&telego.SendMessageParams{
-				ChatID: telego.ChatID{ID: chatID},
-				Text:   "OK.",
-			})
-			if err != nil {
-				fmt.Println("Error during requesting msg", err)
-			}
 
+			coords, err := weatherapi.SendGeocoderRequest(message.Text)
+			fmt.Println(coords)
+			if err != nil {
+				fmt.Println("error with geocoder", err)
+				_, err := bot.SendMessage(&telego.SendMessageParams{
+					ChatID: telego.ChatID{ID: chatID},
+					Text:   "Wrong City..",
+				})
+				if err != nil {
+					fmt.Println("Error during requesting msg", err)
+				}
+			} else {
+				_, err := bot.SendMessage(&telego.SendMessageParams{
+					ChatID: telego.ChatID{ID: chatID},
+					Text:   "How frequently would you like to get updates?.",
+				})
+				if err != nil {
+					fmt.Println("Error during requesting msg", err)
+				}
+				db.InsertUser(int(chatID), message.Text)
+			}
 			err = redis_client.Set(ctx, strid, "", 0).Err()
 			if err != nil {
 				fmt.Println("Error with redis", err)
 			}
+			// fmt.Println(chatID)
 		}
 	})
 
