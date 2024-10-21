@@ -14,6 +14,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/mymmrac/telego"
 	"github.com/mymmrac/telego/telegohandler"
+	tu "github.com/mymmrac/telego/telegoutil"
 )
 
 func init() {
@@ -26,6 +27,29 @@ func main() {
 
 	// coords := weatherapi.SendGeocoderRequest("Yekaterinburg")
 	// weatherapi.SendWeatherRequest(coords)
+
+	keyboard := tu.InlineKeyboard(
+		tu.InlineKeyboardRow(
+			telego.InlineKeyboardButton{
+				Text:         "Per minute",
+				CallbackData: "minute",
+			},
+			telego.InlineKeyboardButton{
+				Text:         "Two times per day",
+				CallbackData: "twodaily",
+			},
+		),
+		tu.InlineKeyboardRow(
+			telego.InlineKeyboardButton{
+				Text:         "Daily",
+				CallbackData: "Weekly",
+			},
+			telego.InlineKeyboardButton{
+				Text:         "Weekly",
+				CallbackData: "weekly",
+			},
+		),
+	)
 	conf := config.New()
 
 	ctx := context.Background()
@@ -77,15 +101,16 @@ func main() {
 				fmt.Println("error with geocoder", err)
 				_, err := bot.SendMessage(&telego.SendMessageParams{
 					ChatID: telego.ChatID{ID: chatID},
-					Text:   "Wrong City..",
+					Text:   "Wrong City.",
 				})
 				if err != nil {
 					fmt.Println("Error during requesting msg", err)
 				}
 			} else {
 				_, err := bot.SendMessage(&telego.SendMessageParams{
-					ChatID: telego.ChatID{ID: chatID},
-					Text:   "How frequently would you like to get updates?.",
+					ChatID:      telego.ChatID{ID: chatID},
+					Text:        "How frequently would you like to get updates?",
+					ReplyMarkup: keyboard,
 				})
 				if err != nil {
 					fmt.Println("Error during requesting msg", err)
@@ -96,7 +121,6 @@ func main() {
 			if err != nil {
 				fmt.Println("Error with redis", err)
 			}
-			// fmt.Println(chatID)
 		}
 	})
 
