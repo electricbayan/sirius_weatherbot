@@ -131,6 +131,50 @@ func main() {
 				fmt.Println("Error during requesting msg", err)
 			}
 		}
+		if message.Text == "/city" {
+			_, err := bot.SendMessage(&telego.SendMessageParams{
+				ChatID: telego.ChatID{ID: chatID},
+				Text:   "Enter new city",
+			})
+			if err != nil {
+				fmt.Println("Error during requesting msg", err)
+			}
+			err = redis_client.Set(ctx, strid, "CityUpdating", 0).Err()
+			if err != nil {
+				fmt.Println("Error with redis", err)
+			}
+		}
+		if current_state == "CityUpdating" {
+			err = redis_client.Set(ctx, strid, "", 0).Err()
+			if err != nil {
+				fmt.Println("Error with redis", err)
+			}
+			city := message.Text
+			lat, lon, err := weatherapi.SendGeocoderRequest(city)
+			if err != nil {
+				fmt.Println("Error during geocoder request", err)
+			}
+			db.UpdateCity(int(chatID), lat, lon)
+
+			_, err = bot.SendMessage(&telego.SendMessageParams{
+				ChatID: telego.ChatID{ID: chatID},
+				Text:   "City updated.",
+			})
+			if err != nil {
+				fmt.Println("Error during requesting msg", err)
+			}
+
+		}
+		if message.Text == "/stop" {
+			db.DeleteUser(int(chatID))
+			_, err = bot.SendMessage(&telego.SendMessageParams{
+				ChatID: telego.ChatID{ID: chatID},
+				Text:   "You have unsubscribed.",
+			})
+			if err != nil {
+				fmt.Println("Error during requesting msg", err)
+			}
+		}
 	})
 	bh.HandleCallbackQuery(func(bot *telego.Bot, callback telego.CallbackQuery) {
 		chatID := callback.Message.GetChat().ID
@@ -170,7 +214,7 @@ func weatherSender(bot telego.Bot) {
 
 			forecast := weatherapi.SendWeatherRequest(lat, lon)
 			if forecast.IsRain {
-				text := fmt.Sprintf("Current day forecast:\nAverage temperature: %.2f.\nCurrent temperature: %.2f\nThere will be no rain.", forecast.AverageTemperature, forecast.CurrentTemp)
+				text := fmt.Sprintf("Current day forecast:\nAverage day temperature: %.2f.\nCurrent temperature: %.2f\nThere will be no rain.", forecast.AverageTemperature, forecast.CurrentTemp)
 				_, err := bot.SendMessage(&telego.SendMessageParams{
 					ChatID: telego.ChatID{ID: int64(id)},
 					Text:   text,
@@ -179,7 +223,7 @@ func weatherSender(bot telego.Bot) {
 					fmt.Println("Error during requesting msg", err)
 				}
 			} else {
-				text := fmt.Sprintf("Current day forecast:\nAverage temperature: %.2f. \nCurrent temperature: %.2f\nThere is rain from %d to %d", forecast.AverageTemperature, forecast.CurrentTemp, forecast.RainStart, forecast.RainStop)
+				text := fmt.Sprintf("Current day forecast:\nAverage day temperature: %.2f. \nCurrent temperature: %.2f\nThere is rain from %d to %d", forecast.AverageTemperature, forecast.CurrentTemp, forecast.RainStart, forecast.RainStop)
 				_, err := bot.SendMessage(&telego.SendMessageParams{
 					ChatID: telego.ChatID{ID: int64(id)},
 					Text:   text,

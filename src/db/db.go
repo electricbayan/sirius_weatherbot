@@ -74,3 +74,43 @@ func SelectNewMessages() *sql.Rows {
 	}
 	return res
 }
+
+func UpdateCity(user_id int, lat float64, lon float64) *sql.Rows {
+	conf := config.New()
+	psqlInfo := fmt.Sprintf("host=localhost port=%d user=%s "+
+		"password=%s dbname=%s sslmode=disable",
+		conf.Postgres.DbPort, conf.Postgres.DbUser, conf.Postgres.DbPass, conf.Postgres.DbName)
+	db, err := sql.Open("postgres", psqlInfo)
+	if err != nil {
+		fmt.Println("Error with postgres", err)
+	}
+	defer db.Close()
+
+	stmt := fmt.Sprintf("UPDATE users SET lat=%f, lon=%f WHERE id=%d", lat, lon, user_id)
+
+	res, err := db.Query(stmt)
+	if err != nil {
+		fmt.Println("Error during database request", err)
+	}
+	return res
+
+}
+
+func DeleteUser(user_id int) *sql.Rows {
+	conf := config.New()
+	psqlInfo := fmt.Sprintf("host=localhost port=%d user=%s "+
+		"password=%s dbname=%s sslmode=disable",
+		conf.Postgres.DbPort, conf.Postgres.DbUser, conf.Postgres.DbPass, conf.Postgres.DbName)
+	db, err := sql.Open("postgres", psqlInfo)
+	if err != nil {
+		fmt.Println("Error with postgres", err)
+	}
+	defer db.Close()
+
+	stmt := fmt.Sprintf("DELETE FROM users WHERE id=%d", user_id)
+	res, err := db.Query(stmt)
+	if err != nil {
+		fmt.Println("Error during database request", err)
+	}
+	return res
+}
