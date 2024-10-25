@@ -152,16 +152,24 @@ func main() {
 			city := message.Text
 			lat, lon, err := weatherapi.SendGeocoderRequest(city)
 			if err != nil {
-				fmt.Println("Error during geocoder request", err)
-			}
-			db.UpdateCity(int(chatID), lat, lon)
+				fmt.Println("error with geocoder", err)
+				_, err := bot.SendMessage(&telego.SendMessageParams{
+					ChatID: telego.ChatID{ID: chatID},
+					Text:   "Wrong City.",
+				})
+				if err != nil {
+					fmt.Println("Error during requesting msg", err)
+				}
+			} else {
+				db.UpdateCity(int(chatID), lat, lon)
 
-			_, err = bot.SendMessage(&telego.SendMessageParams{
-				ChatID: telego.ChatID{ID: chatID},
-				Text:   "City updated.",
-			})
-			if err != nil {
-				fmt.Println("Error during requesting msg", err)
+				_, err = bot.SendMessage(&telego.SendMessageParams{
+					ChatID: telego.ChatID{ID: chatID},
+					Text:   "City updated.",
+				})
+				if err != nil {
+					fmt.Println("Error during requesting msg", err)
+				}
 			}
 
 		}

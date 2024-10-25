@@ -36,10 +36,10 @@ func New() *Config {
 			DbUser: getEnv("POSTGRES_USER", ""),
 			DbPass: getEnv("POSTGRES_PASSWORD", ""),
 			DbPort: 2828,
-			DbHost: getEnv("POSTGRES_HOST", ""),
+			DbHost: "172.28.0.2",
 		},
 		Redis: RedisConfig{
-			RedisHost: getEnv("REDIS_HOST", ""),
+			RedisHost: "172.28.0.2",
 			RedisPort: getEnvAsInt("REDIS_PORT", 6379),
 			RedisPass: getEnv("REDIS_PASSWORD", ""),
 			RedisDb:   getEnv("REDIS_DB", ""),
